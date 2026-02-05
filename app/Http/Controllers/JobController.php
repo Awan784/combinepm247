@@ -34,10 +34,11 @@ class JobController extends Controller
     public function index()
     {
         $currentDate = Carbon::now()->toDateString();
-        $job = Job::where('created_at', '>=', Carbon::now()->subDays(3))->where('date', '<' , $currentDate)->where('status', 'Active')->orderBy('date', 'asc')->get();
-        $job1 = Job::where('created_at', '>=', Carbon::now()->subDays(3))->where('date', $currentDate)->where('status', 'Active')->orderBy('date', 'asc')->get();
-        $job2 = Job::where('created_at', '>=', Carbon::now()->subDays(3))->where('date', '>' , $currentDate)->where('status', 'Active')->orderBy('date', 'asc')->get();
-        $job3 = Job::where('created_at', '>=', Carbon::now()->subDays(3))->where('status', 'Completed')->orderBy('date', 'asc')->get();
+        $user = auth()->user();
+        $job = Job::visibleToUser($user)->where('created_at', '>=', Carbon::now()->subDays(3))->where('date', '<' , $currentDate)->where('status', 'Active')->orderBy('date', 'asc')->get();
+        $job1 = Job::visibleToUser($user)->where('created_at', '>=', Carbon::now()->subDays(3))->where('date', $currentDate)->where('status', 'Active')->orderBy('date', 'asc')->get();
+        $job2 = Job::visibleToUser($user)->where('created_at', '>=', Carbon::now()->subDays(3))->where('date', '>' , $currentDate)->where('status', 'Active')->orderBy('date', 'asc')->get();
+        $job3 = Job::visibleToUser($user)->where('created_at', '>=', Carbon::now()->subDays(3))->where('status', 'Completed')->orderBy('date', 'asc')->get();
         return view("jobs/index",compact('job', 'job1', 'job2', 'job3'));
     }
   
@@ -823,14 +824,17 @@ public function showPdf($id)
     {
         $loadedTime = Carbon::parse($request->input('loaded_time'));
         $sevenDaysAgo = Carbon::now()->subDays(3);
-        $job = Job::where('created_at', '>', $loadedTime)->orWhere('updated_at', '>', $loadedTime)->first();
+        $user = auth()->user();
+        $job = Job::visibleToUser($user)->where(function ($q) use ($loadedTime) {
+            $q->where('created_at', '>', $loadedTime)->orWhere('updated_at', '>', $loadedTime);
+        })->first();
 
         if ($job) {
             $currentDate = Carbon::now()->toDateString();
-            $job = Job::where('created_at', '>=', Carbon::now()->subDays(3))->where('date', '<' , $currentDate)->where('status', 'Active')->orderBy('date', 'asc')->get();
-            $job1 = Job::where('created_at', '>=', Carbon::now()->subDays(3))->where('date', $currentDate)->where('status', 'Active')->orderBy('date', 'asc')->get();
-            $job2 = Job::where('created_at', '>=', Carbon::now()->subDays(3))->where('date', '>' , $currentDate)->where('status', 'Active')->orderBy('date', 'asc')->get();
-            $job3 = Job::where('created_at', '>=', Carbon::now()->subDays(3))->where('status', 'Completed')->orderBy('date', 'asc')->get();
+            $job = Job::visibleToUser($user)->where('created_at', '>=', Carbon::now()->subDays(3))->where('date', '<' , $currentDate)->where('status', 'Active')->orderBy('date', 'asc')->get();
+            $job1 = Job::visibleToUser($user)->where('created_at', '>=', Carbon::now()->subDays(3))->where('date', $currentDate)->where('status', 'Active')->orderBy('date', 'asc')->get();
+            $job2 = Job::visibleToUser($user)->where('created_at', '>=', Carbon::now()->subDays(3))->where('date', '>' , $currentDate)->where('status', 'Active')->orderBy('date', 'asc')->get();
+            $job3 = Job::visibleToUser($user)->where('created_at', '>=', Carbon::now()->subDays(3))->where('status', 'Completed')->orderBy('date', 'asc')->get();
             $html = view('includes.mainDashboard', ['jobs' => $job])->render();
             $html1 = view('includes.mainDashboard', ['jobs' => $job1])->render();
             $html2 = view('includes.mainDashboard', ['jobs' => $job2])->render();
@@ -871,7 +875,12 @@ public function showPdf($id)
     // Contracts Functions
     public function Contracts()
     {
-        $jobs = Job::where('created_at', '>=', Carbon::now()->subDays(7))->where('contract_status', '1')->latest()->get();
+        $user = auth()->user();
+        $jobs = Job::visibleToUser($user)
+            ->where('created_at', '>=', Carbon::now()->subDays(7))
+            ->where('contract_status', '1')
+            ->latest()
+            ->get();
         return view("jobs/contracts",compact('jobs'));
     }
     public function ContractSent($id)
@@ -911,7 +920,12 @@ public function showPdf($id)
     public function Payments()
     {
 
-        $jobs = Job::where('created_at', '>=', Carbon::now()->subDays(7))->where('contract_status', '1')->latest()->get();
+        $user = auth()->user();
+        $jobs = Job::visibleToUser($user)
+            ->where('created_at', '>=', Carbon::now()->subDays(7))
+            ->where('contract_status', '1')
+            ->latest()
+            ->get();
 
         return view("jobs/payments",compact('jobs'));
     }

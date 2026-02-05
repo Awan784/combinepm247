@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Job extends Model
@@ -10,6 +11,23 @@ class Job extends Model
     use SoftDeletes;
     public $table = "jobs";
     protected $fillable = ["customer_email","postcode","created_by", "added_by", "date", "engineer_id","agent_id", "job_invoice_no", "hand_overed_agent", "status", "contract_status", "job_type","update_status"];
+
+    /**
+     * Scope: for non-admin users, only jobs where they are ADDED BY, Agent ASSIGNED, or HANDED OVER.
+     * Admins see all jobs.
+     */
+    public function scopeVisibleToUser(Builder $query, User $user): Builder
+    {
+        if ($user->user_type_id === UserType::ADMIN) {
+            return $query;
+        }
+        return $query->where(function (Builder $q) use ($user) {
+            $q->where('created_by', $user->id)
+                ->orWhere('added_by', $user->name)
+                ->orWhere('agent_id', $user->id)
+                ->orWhere('hand_overed_agent', $user->id);
+        });
+    }
 
     public function engineer_user(){
         return $this->belongsTo(User::class,"engineer_id");
