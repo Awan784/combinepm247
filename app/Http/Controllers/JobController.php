@@ -31,7 +31,23 @@ class JobController extends Controller
     /**
      * Display a listing of the resource.
      */
+    /**
+     * Display all jobs (no user filter).
+     */
     public function index()
+    {
+        $currentDate = Carbon::now()->toDateString();
+        $job = Job::where('created_at', '>=', Carbon::now()->subDays(3))->where('date', '<' , $currentDate)->where('status', 'Active')->orderBy('date', 'asc')->get();
+        $job1 = Job::where('created_at', '>=', Carbon::now()->subDays(3))->where('date', $currentDate)->where('status', 'Active')->orderBy('date', 'asc')->get();
+        $job2 = Job::where('created_at', '>=', Carbon::now()->subDays(3))->where('date', '>' , $currentDate)->where('status', 'Active')->orderBy('date', 'asc')->get();
+        $job3 = Job::where('created_at', '>=', Carbon::now()->subDays(3))->where('status', 'Completed')->orderBy('date', 'asc')->get();
+        return view("jobs/index", compact('job', 'job1', 'job2', 'job3'));
+    }
+
+    /**
+     * Display only jobs where current user is ADDED BY, Agent ASSIGNED, or HANDED OVER.
+     */
+    public function myJobs()
     {
         $currentDate = Carbon::now()->toDateString();
         $user = auth()->user();
@@ -39,7 +55,8 @@ class JobController extends Controller
         $job1 = Job::visibleToUser($user)->where('created_at', '>=', Carbon::now()->subDays(3))->where('date', $currentDate)->where('status', 'Active')->orderBy('date', 'asc')->get();
         $job2 = Job::visibleToUser($user)->where('created_at', '>=', Carbon::now()->subDays(3))->where('date', '>' , $currentDate)->where('status', 'Active')->orderBy('date', 'asc')->get();
         $job3 = Job::visibleToUser($user)->where('created_at', '>=', Carbon::now()->subDays(3))->where('status', 'Completed')->orderBy('date', 'asc')->get();
-        return view("jobs/index",compact('job', 'job1', 'job2', 'job3'));
+        $isMyJobs = true;
+        return view("jobs/index", compact('job', 'job1', 'job2', 'job3', 'isMyJobs'));
     }
   
  public function investigationPdf()
@@ -824,17 +841,29 @@ public function showPdf($id)
     {
         $loadedTime = Carbon::parse($request->input('loaded_time'));
         $sevenDaysAgo = Carbon::now()->subDays(3);
+        $filterMyJobs = $request->input('filter') === 'my';
         $user = auth()->user();
-        $job = Job::visibleToUser($user)->where(function ($q) use ($loadedTime) {
-            $q->where('created_at', '>', $loadedTime)->orWhere('updated_at', '>', $loadedTime);
-        })->first();
+        $job = $filterMyJobs
+            ? Job::visibleToUser($user)->where(function ($q) use ($loadedTime) {
+                $q->where('created_at', '>', $loadedTime)->orWhere('updated_at', '>', $loadedTime);
+            })->first()
+            : Job::where(function ($q) use ($loadedTime) {
+                $q->where('created_at', '>', $loadedTime)->orWhere('updated_at', '>', $loadedTime);
+            })->first();
 
         if ($job) {
             $currentDate = Carbon::now()->toDateString();
-            $job = Job::visibleToUser($user)->where('created_at', '>=', Carbon::now()->subDays(3))->where('date', '<' , $currentDate)->where('status', 'Active')->orderBy('date', 'asc')->get();
-            $job1 = Job::visibleToUser($user)->where('created_at', '>=', Carbon::now()->subDays(3))->where('date', $currentDate)->where('status', 'Active')->orderBy('date', 'asc')->get();
-            $job2 = Job::visibleToUser($user)->where('created_at', '>=', Carbon::now()->subDays(3))->where('date', '>' , $currentDate)->where('status', 'Active')->orderBy('date', 'asc')->get();
-            $job3 = Job::visibleToUser($user)->where('created_at', '>=', Carbon::now()->subDays(3))->where('status', 'Completed')->orderBy('date', 'asc')->get();
+            if ($filterMyJobs) {
+                $job = Job::visibleToUser($user)->where('created_at', '>=', Carbon::now()->subDays(3))->where('date', '<' , $currentDate)->where('status', 'Active')->orderBy('date', 'asc')->get();
+                $job1 = Job::visibleToUser($user)->where('created_at', '>=', Carbon::now()->subDays(3))->where('date', $currentDate)->where('status', 'Active')->orderBy('date', 'asc')->get();
+                $job2 = Job::visibleToUser($user)->where('created_at', '>=', Carbon::now()->subDays(3))->where('date', '>' , $currentDate)->where('status', 'Active')->orderBy('date', 'asc')->get();
+                $job3 = Job::visibleToUser($user)->where('created_at', '>=', Carbon::now()->subDays(3))->where('status', 'Completed')->orderBy('date', 'asc')->get();
+            } else {
+                $job = Job::where('created_at', '>=', Carbon::now()->subDays(3))->where('date', '<' , $currentDate)->where('status', 'Active')->orderBy('date', 'asc')->get();
+                $job1 = Job::where('created_at', '>=', Carbon::now()->subDays(3))->where('date', $currentDate)->where('status', 'Active')->orderBy('date', 'asc')->get();
+                $job2 = Job::where('created_at', '>=', Carbon::now()->subDays(3))->where('date', '>' , $currentDate)->where('status', 'Active')->orderBy('date', 'asc')->get();
+                $job3 = Job::where('created_at', '>=', Carbon::now()->subDays(3))->where('status', 'Completed')->orderBy('date', 'asc')->get();
+            }
             $html = view('includes.mainDashboard', ['jobs' => $job])->render();
             $html1 = view('includes.mainDashboard', ['jobs' => $job1])->render();
             $html2 = view('includes.mainDashboard', ['jobs' => $job2])->render();

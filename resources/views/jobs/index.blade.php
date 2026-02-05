@@ -335,12 +335,14 @@
             var pageLoadTime = new Date().toISOString(); // ISO format for easy comparison
 
             function getLatestData() {
+                var data = { loaded_time: pageLoadTime };
+                @if(isset($isMyJobs) && $isMyJobs)
+                data.filter = 'my';
+                @endif
                 $.ajax({
                     url: "{{ url('dashboard/latest_data') }}",
                     method: "GET",
-                    data: {
-                        loaded_time: pageLoadTime
-                    },
+                    data: data,
                     success: function (response) {
                         if (response.status === 'success') {
                             // Update the page with the latest data

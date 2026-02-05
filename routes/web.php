@@ -81,10 +81,9 @@ Route::middleware('auth')->group(function() {
         Route::post("add-availability",[EngineerController::class,"AddAvailability"]);
         Route::get("remove/{id}",[EngineerController::class,"RemoveEngineerAvailability"]);
     });
-    
-  
 
-    Route::resource('jobs',JobController::class);
+    Route::get('jobs/my-jobs', [JobController::class, 'myJobs'])->name('jobs.my_jobs');
+    Route::resource('jobs', JobController::class);
     Route::group(["prefix" => "jobs"],function(){
         Route::get('assign_engineer/{id}',[JobController::class, 'AssignEngineer'])->name('job.assign_engineer');
         Route::post('assign_engineer/{id}',[JobController::class, 'AssignEngineerPost'])->name('job.assign_engineer.post');

@@ -108,7 +108,8 @@ class UserController extends Controller
                 ->where('status', 'Completed')
                 ->orderBy('date', 'asc')
                 ->get();
-            return view("jobs.index",compact('job', 'job1', 'job2', 'job3'));
+            $isMyJobs = true;
+            return view("jobs.index", compact('job', 'job1', 'job2', 'job3', 'isMyJobs'));
         }else{
             return redirect('dashboard/engineer');
         }
