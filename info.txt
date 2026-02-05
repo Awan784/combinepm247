@@ -1,0 +1,13 @@
+****run these seeders one by one after migrations****
+php artisan db:seed --class=CreateAdminUserSeeder
+php artisan db:seed --class=UserTypesSeeder
+php artisan db:seed --class=JobTypeSeeder
+
+***Tips***
+Make sure to add smtp information and database information in .env file according to your server
+
+****admin login****
+admin@example.com
+abc123
+
+
