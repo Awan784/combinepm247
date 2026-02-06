@@ -29,6 +29,21 @@ class Job extends Model
         });
     }
 
+    /**
+     * Scope: for non-admin users, only jobs where they are Agent ASSIGNED or HANDED OVER (not added by).
+     * Used for "My Jobs" page. Admins see all jobs.
+     */
+    public function scopeVisibleToUserAgentOrHandover(Builder $query, User $user): Builder
+    {
+        if ($user->user_type_id === UserType::ADMIN) {
+            return $query;
+        }
+        return $query->where(function (Builder $q) use ($user) {
+            $q->where('agent_id', $user->id)
+                ->orWhere('hand_overed_agent', $user->id);
+        });
+    }
+
     public function engineer_user(){
         return $this->belongsTo(User::class,"engineer_id");
     }

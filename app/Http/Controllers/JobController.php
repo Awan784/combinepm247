@@ -45,16 +45,16 @@ class JobController extends Controller
     }
 
     /**
-     * Display only jobs where current user is ADDED BY, Agent ASSIGNED, or HANDED OVER.
+     * Display only jobs where current user is Agent ASSIGNED or HANDED OVER (not added by).
      */
     public function myJobs()
     {
         $currentDate = Carbon::now()->toDateString();
         $user = auth()->user();
-        $job = Job::visibleToUser($user)->where('created_at', '>=', Carbon::now()->subDays(3))->where('date', '<' , $currentDate)->where('status', 'Active')->orderBy('date', 'asc')->get();
-        $job1 = Job::visibleToUser($user)->where('created_at', '>=', Carbon::now()->subDays(3))->where('date', $currentDate)->where('status', 'Active')->orderBy('date', 'asc')->get();
-        $job2 = Job::visibleToUser($user)->where('created_at', '>=', Carbon::now()->subDays(3))->where('date', '>' , $currentDate)->where('status', 'Active')->orderBy('date', 'asc')->get();
-        $job3 = Job::visibleToUser($user)->where('created_at', '>=', Carbon::now()->subDays(3))->where('status', 'Completed')->orderBy('date', 'asc')->get();
+        $job = Job::visibleToUserAgentOrHandover($user)->where('created_at', '>=', Carbon::now()->subDays(3))->where('date', '<' , $currentDate)->where('status', 'Active')->orderBy('date', 'asc')->get();
+        $job1 = Job::visibleToUserAgentOrHandover($user)->where('created_at', '>=', Carbon::now()->subDays(3))->where('date', $currentDate)->where('status', 'Active')->orderBy('date', 'asc')->get();
+        $job2 = Job::visibleToUserAgentOrHandover($user)->where('created_at', '>=', Carbon::now()->subDays(3))->where('date', '>' , $currentDate)->where('status', 'Active')->orderBy('date', 'asc')->get();
+        $job3 = Job::visibleToUserAgentOrHandover($user)->where('created_at', '>=', Carbon::now()->subDays(3))->where('status', 'Completed')->orderBy('date', 'asc')->get();
         $isMyJobs = true;
         return view("jobs/index", compact('job', 'job1', 'job2', 'job3', 'isMyJobs'));
     }
