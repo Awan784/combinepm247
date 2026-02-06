@@ -84,32 +84,26 @@ class UserController extends Controller
     {
         if(auth()->user()->user_type_id !== UserType::ENGINEER){
             $currentDate = Carbon::now()->toDateString();
-            $user = auth()->user();
-            $job = Job::visibleToUser($user)
-                ->where('created_at', '>=', Carbon::now()->subDays(3))
+            $job = Job::where('created_at', '>=', Carbon::now()->subDays(3))
                 ->where('date', '<' , $currentDate)
                 ->where('status', 'Active')
                 ->orderBy('date', 'asc')
                 ->get();
-            $job1 = Job::visibleToUser($user)
-                ->where('created_at', '>=', Carbon::now()->subDays(3))
+            $job1 = Job::where('created_at', '>=', Carbon::now()->subDays(3))
                 ->where('date', $currentDate)
                 ->where('status', 'Active')
                 ->orderBy('date', 'asc')
                 ->get();
-            $job2 = Job::visibleToUser($user)
-                ->where('created_at', '>=', Carbon::now()->subDays(3))
+            $job2 = Job::where('created_at', '>=', Carbon::now()->subDays(3))
                 ->where('date', '>' , $currentDate)
                 ->where('status', 'Active')
                 ->orderBy('date', 'asc')
                 ->get();
-            $job3 = Job::visibleToUser($user)
-                ->where('created_at', '>=', Carbon::now()->subDays(3))
+            $job3 = Job::where('created_at', '>=', Carbon::now()->subDays(3))
                 ->where('status', 'Completed')
                 ->orderBy('date', 'asc')
                 ->get();
-            $isMyJobs = true;
-            return view("jobs.index", compact('job', 'job1', 'job2', 'job3', 'isMyJobs'));
+            return view("jobs.index", compact('job', 'job1', 'job2', 'job3'));
         }else{
             return redirect('dashboard/engineer');
         }
