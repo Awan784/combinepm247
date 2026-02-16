@@ -904,9 +904,7 @@ public function showPdf($id)
     // Contracts Functions
     public function Contracts()
     {
-        $user = auth()->user();
-        $jobs = Job::visibleToUser($user)
-            ->where('created_at', '>=', Carbon::now()->subDays(7))
+        $jobs = Job::where('created_at', '>=', Carbon::now()->subDays(7))
             ->where('contract_status', '1')
             ->latest()
             ->get();
@@ -949,9 +947,7 @@ public function showPdf($id)
     public function Payments()
     {
 
-        $user = auth()->user();
-        $jobs = Job::visibleToUser($user)
-            ->where('created_at', '>=', Carbon::now()->subDays(7))
+        $jobs = Job::where('created_at', '>=', Carbon::now()->subDays(7))
             ->where('contract_status', '1')
             ->latest()
             ->get();
